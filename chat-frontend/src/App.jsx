@@ -7,30 +7,39 @@ import { io } from 'socket.io-client';
 const socket = io('http://localhost:4000'); // Update with your server's URL
 
 function App() {
-  // State to handle name input
   const [name, setName] = useState('anonymous');
-  // State to handle message input
   const [message, setMessage] = useState('');
-  // State to store messages
   const [messages, setMessages] = useState([]);
-  // State to handle typing feedback
   const [feedback, setFeedback] = useState('');
-  // State to track the total clients
   const [clientsTotal, setClientsTotal] = useState(0);
-  // State to track the list of users
   const [users, setUsers] = useState({});
-  // State to track the selected recipient for private messages
-  const [recipientId, setRecipientId] = useState('');
+  const [recipientId, setRecipientId] = useState('All');
+  const [conversations, setConversations] = useState({ All: [] });
 
   useEffect(() => {
     socket.emit('setUsername', name);
 
     socket.on('message', (newMessage) => {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setConversations((prevConversations) => ({
+        ...prevConversations,
+        All: [...prevConversations.All, newMessage],
+      }));
     });
 
     socket.on('privateMessage', (newMessage) => {
+      const recipientKey =
+        newMessage.senderId === socket.id
+          ? newMessage.recipientId
+          : newMessage.senderId;
       setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setConversations((prevConversations) => ({
+        ...prevConversations,
+        [recipientKey]: [
+          ...(prevConversations[recipientKey] || []),
+          newMessage,
+        ],
+      }));
     });
 
     socket.on('typing', (typingFeedback) => {
@@ -71,11 +80,12 @@ function App() {
         author: name,
         date: new Date().toLocaleString(),
         senderId: socket.id,
+        recipientId: recipientId === 'All' ? 'All' : recipientId,
       };
-      if (recipientId) {
-        socket.emit('privateMessage', { recipientId, message });
-      } else {
+      if (recipientId === 'All') {
         socket.emit('message', newMessage);
+      } else {
+        socket.emit('privateMessage', { recipientId, message });
       }
       setMessage('');
       setFeedback('');
@@ -88,29 +98,39 @@ function App() {
   };
 
   const handleRecipientClick = (id) => {
-    setRecipientId(id === recipientId ? '' : id); // Toggle recipient selection
+    setRecipientId(id);
   };
+
+  const currentMessages = conversations[recipientId] || [];
 
   return (
     <>
       <h1>iChat</h1>
-
       <div className="fullBody">
         <div className="main userList">
           <h3>Users:</h3>
           <ul>
-            {Object.keys(users).map((id) => (
-              <li
-                key={id}
-                onClick={() => handleRecipientClick(id)}
-                className={id === recipientId ? 'selectedUser' : ''}
-              >
-                {users[id]}
-              </li>
-            ))}
+            <li
+              key="All"
+              onClick={() => handleRecipientClick('All')}
+              className={recipientId === 'All' ? 'selectedUser' : ''}
+            >
+              All
+            </li>
+            {Object.keys(users).map(
+              (id) =>
+                id !== socket.id && (
+                  <li
+                    key={id}
+                    onClick={() => handleRecipientClick(id)}
+                    className={id === recipientId ? 'selectedUser' : ''}
+                  >
+                    {users[id]}
+                  </li>
+                )
+            )}
           </ul>
         </div>
-
         <div className="main">
           <div className="name">
             <span>
@@ -125,10 +145,14 @@ function App() {
               />
             </span>
           </div>
-
           <ul className="messageContainer" id="messageContainer">
-            {messages.map((msg, index) => (
-              <li key={index} className={msg.direction}>
+            {currentMessages.map((msg, index) => (
+              <li
+                key={index}
+                className={
+                  msg.senderId === socket.id ? 'messageRight' : 'messageLeft'
+                }
+              >
                 <p className="message">{msg.text}</p>
                 <span>
                   {msg.author} - {msg.date}
@@ -141,7 +165,6 @@ function App() {
               </p>
             </li>
           </ul>
-
           <form
             className="messageForm"
             id="messageForm"
@@ -164,7 +187,6 @@ function App() {
               </span>
             </button>
           </form>
-
           <h3 className="clientsTotal" id="ClientTotal">
             Total Clients: {clientsTotal}
           </h3>

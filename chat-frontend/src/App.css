@@ -168,3 +168,17 @@ body {
 .userList {
   padding: 2em;
 }
+
+.userList ul {
+  list-style: none;
+  padding: 0;
+}
+
+.userList li {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.userList li.selectedUser {
+  background-color: #d3d3d3;
+}

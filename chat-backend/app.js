@@ -37,8 +37,7 @@ io.on('connection', (socket) => {
   socket.on('message', (message) => {
     const messageWithDirection = {
       ...message,
-      direction:
-        socket.id === message.senderId ? 'messageRight' : 'messageLeft',
+      direction: 'messageRight', // The sender's message will always be 'messageRight'
     };
     io.emit('message', messageWithDirection);
   });
@@ -49,13 +48,15 @@ io.on('connection', (socket) => {
       text: message,
       author: users[socket.id],
       date: new Date().toLocaleString(),
-      direction: 'messageRight', // always 'messageRight' for the sender
+      senderId: socket.id,
+      direction: 'messageRight', // The sender's message will always be 'messageRight'
     };
+    // Send to recipient
     io.to(recipientId).emit('privateMessage', privateMessage);
     // Echo the message back to the sender with 'messageLeft' direction
     socket.emit('privateMessage', {
       ...privateMessage,
-      direction: 'messageLeft',
+      direction: 'messageRight',
     });
   });
 
