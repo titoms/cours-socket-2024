@@ -49,15 +49,13 @@ io.on('connection', (socket) => {
       author: users[socket.id],
       date: new Date().toLocaleString(),
       senderId: socket.id,
+      recipientId: recipientId,
       direction: 'messageRight', // The sender's message will always be 'messageRight'
     };
     // Send to recipient
     io.to(recipientId).emit('privateMessage', privateMessage);
-    // Echo the message back to the sender with 'messageLeft' direction
-    socket.emit('privateMessage', {
-      ...privateMessage,
-      direction: 'messageRight',
-    });
+    // Echo the message back to the sender with 'messageRight' direction
+    socket.emit('privateMessage', privateMessage);
   });
 
   // Handle typing feedback
