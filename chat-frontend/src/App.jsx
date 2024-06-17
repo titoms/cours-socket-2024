@@ -1,7 +1,11 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faUser } from '@fortawesome/free-solid-svg-icons';
+import {
+  faMugHot,
+  faPaperPlane,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons';
 import { io } from 'socket.io-client';
 
 const socket = io('http://localhost:4000'); // Update with your server's URL
@@ -111,7 +115,7 @@ function App() {
 
   return (
     <>
-      <h1 className="title">iChat</h1>
+      <h1 className="title">☕ iChat</h1>
       <div className="fullBody">
         <div className="main flex">
           <div className="userList">
@@ -140,7 +144,7 @@ function App() {
           </div>
           <div className="conversation">
             <div className="name">
-              <span>
+              <span className="flex">
                 <FontAwesomeIcon icon={faUser} />
                 <input
                   type="text"
