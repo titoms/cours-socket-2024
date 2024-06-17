@@ -65,6 +65,8 @@ function App() {
       socket.emit('message', newMessage);
       setMessage('');
       setFeedback('');
+      // Emit stop typing event
+      socket.emit('stopTyping');
     }
   };
 
@@ -92,7 +94,10 @@ function App() {
         </div>
         <ul className="messageContainer" id="messageContainer">
           {messages.map((msg, index) => (
-            <li key={index} className="messageLeft">
+            <li
+              key={index}
+              className={msg.author === name ? 'messageRight' : 'messageLeft'}
+            >
               <p className="message">{msg.text}</p>
               <span>
                 {msg.author} - {msg.date}

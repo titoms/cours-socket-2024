@@ -38,6 +38,11 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('typing', feedback);
   });
 
+  // Handle stop typing event
+  socket.on('stopTyping', () => {
+    socket.broadcast.emit('typing', '');
+  });
+
   // Handle client disconnection
   socket.on('disconnect', () => {
     console.log(`Client disconnected : ${socket.id}`);
