@@ -23,7 +23,7 @@ let socketsConnected = new Set();
 let users = {};
 
 io.on('connection', (socket) => {
-  console.log(`New client connected : ${socket.id}`);
+  console.log(`New client connected: ${socket.id}`);
   socketsConnected.add(socket.id);
 
   socket.on('setUsername', (username) => {
@@ -59,18 +59,26 @@ io.on('connection', (socket) => {
   });
 
   // Handle typing feedback
-  socket.on('typing', (feedback) => {
-    socket.broadcast.emit('typing', feedback);
+  socket.on('typing', ({ recipientId, feedback }) => {
+    if (recipientId === 'All') {
+      socket.broadcast.emit('typing', { recipientId, feedback });
+    } else {
+      socket.to(recipientId).emit('typing', { recipientId, feedback });
+    }
   });
 
   // Handle stop typing event
-  socket.on('stopTyping', () => {
-    socket.broadcast.emit('typing', '');
+  socket.on('stopTyping', (recipientId) => {
+    if (recipientId === 'All') {
+      socket.broadcast.emit('typing', { recipientId, feedback: '' });
+    } else {
+      socket.to(recipientId).emit('typing', { recipientId, feedback: '' });
+    }
   });
 
   // Handle client disconnection
   socket.on('disconnect', () => {
-    console.log(`Client disconnected : ${socket.id}`);
+    console.log(`Client disconnected: ${socket.id}`);
     socketsConnected.delete(socket.id);
     delete users[socket.id];
     io.emit('updateUserList', users);

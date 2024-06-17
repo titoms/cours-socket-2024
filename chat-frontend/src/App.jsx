@@ -42,8 +42,10 @@ function App() {
       }));
     });
 
-    socket.on('typing', (typingFeedback) => {
-      setFeedback(typingFeedback);
+    socket.on('typing', ({ recipientId: typingRecipientId, feedback }) => {
+      if (typingRecipientId === recipientId) {
+        setFeedback(feedback);
+      }
     });
 
     socket.on('clientsTotal', (totalClients) => {
@@ -61,7 +63,7 @@ function App() {
       socket.off('clientsTotal');
       socket.off('updateUserList');
     };
-  }, [name]);
+  }, [name, recipientId]);
 
   const handleNameChange = (e) => {
     setName(e.target.value);
@@ -89,16 +91,20 @@ function App() {
       }
       setMessage('');
       setFeedback('');
-      socket.emit('stopTyping');
+      socket.emit('stopTyping', recipientId);
     }
   };
 
   const handleTyping = () => {
-    socket.emit('typing', `${name} is typing a message...`);
+    socket.emit('typing', {
+      recipientId,
+      feedback: `${name} is typing a message...`,
+    });
   };
 
   const handleRecipientClick = (id) => {
     setRecipientId(id);
+    setFeedback(''); // Clear typing feedback when switching conversations
   };
 
   const currentMessages = conversations[recipientId] || [];
@@ -159,11 +165,13 @@ function App() {
                 </span>
               </li>
             ))}
-            <li className="messageFeedback">
-              <p className="feedback" id="feedback">
-                {feedback}
-              </p>
-            </li>
+            {feedback && (
+              <li className="messageFeedback">
+                <p className="feedback" id="feedback">
+                  {feedback}
+                </p>
+              </li>
+            )}
           </ul>
           <form
             className="messageForm"
