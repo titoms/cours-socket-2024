@@ -1,1 +1,3 @@
-# cours-socket-2024
+# Cours NodeJS Websocket 2024
+
+## Chat App
