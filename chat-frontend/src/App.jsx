@@ -1,7 +1,10 @@
 import './App.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane, faUser } from '@fortawesome/free-solid-svg-icons';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:4000'); // Update with your server's URL
 
 function App() {
   // State to handle name input
@@ -14,6 +17,30 @@ function App() {
   const [feedback, setFeedback] = useState('');
   // State to track the total clients
   const [clientsTotal, setClientsTotal] = useState(0);
+
+  useEffect(() => {
+    // Listen for messages from the server
+    socket.on('message', (newMessage) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+
+    // Listen for feedback from the server
+    socket.on('typing', (typingFeedback) => {
+      setFeedback(typingFeedback);
+    });
+
+    // Listen for client count updates from the server
+    socket.on('clientsTotal', (totalClients) => {
+      setClientsTotal(totalClients);
+    });
+
+    // Clean up the effect
+    return () => {
+      socket.off('message');
+      socket.off('typing');
+      socket.off('clientsTotal');
+    };
+  }, []);
 
   // Function to handle name input change
   const handleNameChange = (e) => {
@@ -34,10 +61,16 @@ function App() {
         author: name,
         date: new Date().toLocaleString(),
       };
-      setMessages([...messages, newMessage]);
+      // Send the message to the server
+      socket.emit('message', newMessage);
       setMessage('');
       setFeedback('');
     }
+  };
+
+  // Function to handle typing feedback
+  const handleTyping = () => {
+    socket.emit('typing', `${name} is typing a message...`);
   };
 
   return (
@@ -49,6 +82,7 @@ function App() {
             <FontAwesomeIcon icon={faUser} />
             <input
               type="text"
+              className="nameInput"
               id="nameInput"
               value={name}
               onChange={handleNameChange}
@@ -80,7 +114,7 @@ function App() {
             className="messageInput"
             value={message}
             onChange={handleMessageChange}
-            onKeyPress={() => setFeedback(`${name} is typing a message...`)}
+            onKeyPress={handleTyping}
           />
           <div className="verticalDivider"></div>
           <button type="submit" className="sendButton">
