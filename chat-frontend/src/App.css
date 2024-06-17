@@ -167,6 +167,7 @@ body {
 
 .userList {
   padding: 2em;
+  background-color: #d8d8d8;
 }
 
 .userList ul {
@@ -177,8 +178,17 @@ body {
 .userList li {
   padding: 5px;
   cursor: pointer;
+  margin: 10px 0;
 }
 
 .userList li.selectedUser {
-  background-color: #d3d3d3;
+  background-color: #a7a7a7;
+  border: 1px solid #a7a7a7;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+}
+
+.flex {
+  display: flex;
 }

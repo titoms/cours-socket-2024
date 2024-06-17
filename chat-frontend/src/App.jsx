@@ -111,93 +111,95 @@ function App() {
 
   return (
     <>
-      <h1>iChat</h1>
+      <h1 className="title">iChat</h1>
       <div className="fullBody">
-        <div className="main userList">
-          <h3>Users:</h3>
-          <ul>
-            <li
-              key="All"
-              onClick={() => handleRecipientClick('All')}
-              className={recipientId === 'All' ? 'selectedUser' : ''}
+        <div className="main flex">
+          <div className="userList">
+            <h3>Users:</h3>
+            <ul>
+              <li
+                key="All"
+                onClick={() => handleRecipientClick('All')}
+                className={recipientId === 'All' ? 'selectedUser' : ''}
+              >
+                All
+              </li>
+              {Object.keys(users).map(
+                (id) =>
+                  id !== socket.id && (
+                    <li
+                      key={id}
+                      onClick={() => handleRecipientClick(id)}
+                      className={id === recipientId ? 'selectedUser' : ''}
+                    >
+                      {users[id]}
+                    </li>
+                  )
+              )}
+            </ul>
+          </div>
+          <div className="conversation">
+            <div className="name">
+              <span>
+                <FontAwesomeIcon icon={faUser} />
+                <input
+                  type="text"
+                  className="nameInput"
+                  id="nameInput"
+                  value={name}
+                  onChange={handleNameChange}
+                  maxLength="20"
+                />
+              </span>
+            </div>
+            <ul className="messageContainer" id="messageContainer">
+              {currentMessages.map((msg, index) => (
+                <li
+                  key={index}
+                  className={
+                    msg.senderId === socket.id ? 'messageRight' : 'messageLeft'
+                  }
+                >
+                  <p className="message">{msg.text}</p>
+                  <span>
+                    {msg.author} - {msg.date}
+                  </span>
+                </li>
+              ))}
+              {feedback && (
+                <li className="messageFeedback">
+                  <p className="feedback" id="feedback">
+                    {feedback}
+                  </p>
+                </li>
+              )}
+            </ul>
+            <form
+              className="messageForm"
+              id="messageForm"
+              onSubmit={handleSubmit}
             >
-              All
-            </li>
-            {Object.keys(users).map(
-              (id) =>
-                id !== socket.id && (
-                  <li
-                    key={id}
-                    onClick={() => handleRecipientClick(id)}
-                    className={id === recipientId ? 'selectedUser' : ''}
-                  >
-                    {users[id]}
-                  </li>
-                )
-            )}
-          </ul>
-        </div>
-        <div className="main">
-          <div className="name">
-            <span>
-              <FontAwesomeIcon icon={faUser} />
               <input
                 type="text"
-                className="nameInput"
-                id="nameInput"
-                value={name}
-                onChange={handleNameChange}
-                maxLength="20"
+                name="message"
+                id="messageInput"
+                className="messageInput"
+                value={message}
+                onChange={handleMessageChange}
+                onKeyPress={handleTyping}
               />
-            </span>
-          </div>
-          <ul className="messageContainer" id="messageContainer">
-            {currentMessages.map((msg, index) => (
-              <li
-                key={index}
-                className={
-                  msg.senderId === socket.id ? 'messageRight' : 'messageLeft'
-                }
-              >
-                <p className="message">{msg.text}</p>
+              <div className="verticalDivider"></div>
+              <button type="submit" className="sendButton">
+                Send
                 <span>
-                  {msg.author} - {msg.date}
+                  <FontAwesomeIcon icon={faPaperPlane} />
                 </span>
-              </li>
-            ))}
-            {feedback && (
-              <li className="messageFeedback">
-                <p className="feedback" id="feedback">
-                  {feedback}
-                </p>
-              </li>
-            )}
-          </ul>
-          <form
-            className="messageForm"
-            id="messageForm"
-            onSubmit={handleSubmit}
-          >
-            <input
-              type="text"
-              name="message"
-              id="messageInput"
-              className="messageInput"
-              value={message}
-              onChange={handleMessageChange}
-              onKeyPress={handleTyping}
-            />
-            <div className="verticalDivider"></div>
-            <button type="submit" className="sendButton">
-              Send
-              <span>
-                <FontAwesomeIcon icon={faPaperPlane} />
-              </span>
-            </button>
-          </form>
-          <h3 className="clientsTotal" id="ClientTotal">
-            Total Clients: {clientsTotal}
-          </h3>
+              </button>
+            </form>
+            <h3 className="clientsTotal" id="ClientTotal">
+              Total Clients: {clientsTotal}
+            </h3>
+          </div>
         </div>
       </div>
     </>
